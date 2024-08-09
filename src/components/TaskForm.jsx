@@ -1,60 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addTask, updateTask } from '../features/taskSlice';
-import { TextField, Button, Box } from '@mui/material';
+import { addTask, updateTask } from '../redux/tasksSlice';
+import { Button, TextField, Box } from '@mui/material';
 
 const TaskForm = () => {
   const dispatch = useDispatch();
-  const selectedTask = useSelector((state) => state.tasks.selectedTask);
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [isUpdate, setIsUpdate] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { currentTask } = useSelector((state) => state.tasks);
 
   useEffect(() => {
-    if (selectedTask) {
-      setTitle(selectedTask.title);
-      setDescription(selectedTask.description);
-      setIsUpdate(true);
-    } else {
-      setTitle('');
-      setDescription('');
-      setIsUpdate(false);
+    if (currentTask) {
+      setTitle(currentTask.title);
+      setDescription(currentTask.description);
+      setIsUpdating(true);
     }
-  }, [selectedTask]);
+  }, [currentTask]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isUpdate) {
-      dispatch(updateTask({ id: selectedTask.id, title, description }));
+  const handleSubmit = () => {
+    if (isUpdating) {
+      dispatch(updateTask({ id: currentTask.id, title, description }));
+      setIsUpdating(false);
     } else {
       dispatch(addTask({ title, description }));
     }
     setTitle('');
     setDescription('');
-    setIsUpdate(false);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box display="flex" flexDirection="column" gap={2} padding={5}>
       <TextField
         label="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        required
-        fullWidth
       />
       <TextField
         label="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        required
-        fullWidth
-        multiline
-        rows={4}
       />
-      <Button type="submit" variant="contained" color="primary">
-        {isUpdate ? 'Update Task' : 'Add Task'}
+      <Button variant="contained" onClick={handleSubmit}>
+        {isUpdating ? 'Update Task' : 'Add Task'}
       </Button>
     </Box>
   );
